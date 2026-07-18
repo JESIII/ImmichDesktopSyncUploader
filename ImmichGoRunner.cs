@@ -41,7 +41,7 @@ public static class ImmichGoRunner
             "--manage-burst", "Stack",
             "--client-timeout", "60m",
             "--session-tag",
-            $"\"{sourceFolder}\""
+            sourceFolder
         };
 
         var psi = new ProcessStartInfo
