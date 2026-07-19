@@ -105,7 +105,7 @@ public sealed class SettingsForm : Form
         var layout = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 2, RowCount = 4, Padding = new Padding(12) };
         layout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 110));
         layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
-        for (int i = 0; i < 4; i++) layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 36));
+        for (int i = 0; i < 4; i++) layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 50));
 
         layout.Controls.Add(new Label { Text = "Server URL:", TextAlign = System.Drawing.ContentAlignment.MiddleLeft }, 0, 0);
         _serverBox = new TextBox { Dock = DockStyle.Fill };
@@ -151,18 +151,36 @@ public sealed class SettingsForm : Form
 
     private void BuildFoldersTab(TabPage tab)
     {
-        var split = new SplitContainer { Dock = DockStyle.Fill, Orientation = Orientation.Horizontal, SplitterDistance = 320 };
+        var layout = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            ColumnCount = 2,
+            RowCount = 7,
+            Padding = new Padding(12)
+        };
+        layout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 130));
+        layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+        layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 22));
+        layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 76));
+        layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 40));
+        layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 40));
+        layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 40));
+        layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 40));
+        layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
 
-        var top = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 2, RowCount = 5, Padding = new Padding(12) };
-        top.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 130));
-        top.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
-        for (int i = 0; i < 5; i++) top.RowStyles.Add(new RowStyle(SizeType.Absolute, 36));
+        layout.Controls.Add(new Label { Text = "Watch folders:", TextAlign = System.Drawing.ContentAlignment.MiddleLeft }, 0, 0);
+        layout.Controls.Add(new Label(), 1, 0);
 
-        top.Controls.Add(new Label { Text = "Watch folders:", TextAlign = System.Drawing.ContentAlignment.MiddleLeft }, 0, 0);
-        _foldersList = new ListBox { Dock = DockStyle.Fill };
-        top.Controls.Add(_foldersList, 1, 0);
+        _foldersList = new ListBox
+        {
+            Dock = DockStyle.Fill,
+            SelectionMode = SelectionMode.MultiExtended,
+            IntegralHeight = false,
+            BorderStyle = BorderStyle.Fixed3D
+        };
+        layout.Controls.Add(_foldersList, 1, 1);
 
-        top.Controls.Add(new Label { Text = "Add folder:", TextAlign = System.Drawing.ContentAlignment.MiddleLeft }, 0, 1);
+        layout.Controls.Add(new Label { Text = "Add folder:", TextAlign = System.Drawing.ContentAlignment.MiddleLeft }, 0, 2);
         var addPanel = new TableLayoutPanel { ColumnCount = 2, Dock = DockStyle.Fill };
         addPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
         addPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 80));
@@ -175,11 +193,11 @@ public sealed class SettingsForm : Form
         };
         addPanel.Controls.Add(_newFolderBox, 0, 0);
         addPanel.Controls.Add(_addFolderBtn, 1, 0);
-        top.Controls.Add(addPanel, 1, 1);
+        layout.Controls.Add(addPanel, 1, 2);
 
-        top.Controls.Add(new Label { Text = "", TextAlign = System.Drawing.ContentAlignment.MiddleLeft }, 0, 2);
+        layout.Controls.Add(new Label { Text = "", TextAlign = System.Drawing.ContentAlignment.MiddleLeft }, 0, 3);
         var addBtnPanel = new FlowLayoutPanel { FlowDirection = FlowDirection.LeftToRight, Dock = DockStyle.Fill };
-        var addBtn = new Button { Text = "Add to list", Width = 110 };
+        var addBtn = new Button { Text = "Add to list", Width = 110, Height = 30 };
         addBtn.Click += (_, _) =>
         {
             var p = _newFolderBox.Text?.Trim();
@@ -189,29 +207,25 @@ public sealed class SettingsForm : Form
                 _newFolderBox.Clear();
             }
         };
-        _removeFolderBtn = new Button { Text = "Remove selected", Width = 130 };
+        _removeFolderBtn = new Button { Text = "Remove selected", Width = 130, Height = 30 };
         _removeFolderBtn.Click += (_, _) =>
         {
-            if (_foldersList.SelectedItem != null) _foldersList.Items.Remove(_foldersList.SelectedItem);
+            var selected = _foldersList.SelectedItems.Cast<object>().ToList();
+            foreach (var item in selected) _foldersList.Items.Remove(item);
         };
         addBtnPanel.Controls.Add(addBtn);
         addBtnPanel.Controls.Add(_removeFolderBtn);
-        top.Controls.Add(addBtnPanel, 1, 2);
+        layout.Controls.Add(addBtnPanel, 1, 3);
 
-        top.Controls.Add(new Label { Text = "Concurrent tasks:", TextAlign = System.Drawing.ContentAlignment.MiddleLeft }, 0, 3);
+        layout.Controls.Add(new Label { Text = "Concurrent tasks:", TextAlign = System.Drawing.ContentAlignment.MiddleLeft }, 0, 4);
         _concurrencyBox = new NumericUpDown { Minimum = 1, Maximum = 32, Value = 4, Dock = DockStyle.Left, Width = 80 };
-        top.Controls.Add(_concurrencyBox, 1, 3);
+        layout.Controls.Add(_concurrencyBox, 1, 4);
 
-        top.Controls.Add(new Label { Text = "Days back (lookback):", TextAlign = System.Drawing.ContentAlignment.MiddleLeft }, 0, 4);
+        layout.Controls.Add(new Label { Text = "Days back (lookback):", TextAlign = System.Drawing.ContentAlignment.MiddleLeft }, 0, 5);
         _daysBackBox = new NumericUpDown { Minimum = 1, Maximum = 3650, Value = 7, Dock = DockStyle.Left, Width = 80 };
-        top.Controls.Add(_daysBackBox, 1, 4);
+        layout.Controls.Add(_daysBackBox, 1, 5);
 
-        var bottom = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 2, RowCount = 2, Padding = new Padding(12) };
-        bottom.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 110));
-        bottom.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
-        bottom.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
-        bottom.RowStyles.Add(new RowStyle(SizeType.Absolute, 36));
-
+        layout.Controls.Add(new Label(), 0, 6);
         var help = new Label
         {
             Dock = DockStyle.Fill,
@@ -221,12 +235,9 @@ public sealed class SettingsForm : Form
                    " - The per-folder concurrency setting controls immich-go's --concurrent-tasks, not folder parallelism.",
             ForeColor = System.Drawing.Color.DimGray
         };
-        bottom.Controls.Add(new Label(), 0, 0);
-        bottom.Controls.Add(help, 1, 0);
+        layout.Controls.Add(help, 1, 6);
 
-        split.Panel1.Controls.Add(top);
-        split.Panel2.Controls.Add(bottom);
-        tab.Controls.Add(split);
+        tab.Controls.Add(layout);
     }
 
     private void BuildScheduleTab(TabPage tab)
@@ -280,7 +291,7 @@ public sealed class SettingsForm : Form
         layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
         layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
         layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
-        layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 36));
+        layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 40));
 
         _autostartCheck = new CheckBox
         {
@@ -299,10 +310,10 @@ public sealed class SettingsForm : Form
         var logHeader = new Label { Text = "Log folder:", AutoSize = true, Margin = new Padding(0, 12, 0, 4) };
         layout.Controls.Add(logHeader, 0, 2);
 
-        var logPanel = new TableLayoutPanel { ColumnCount = 2, Dock = DockStyle.Top, Height = 28 };
+        var logPanel = new TableLayoutPanel { ColumnCount = 2, Dock = DockStyle.Top, Height = 40 };
         logPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
         logPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 80));
-        _logDirBox = new TextBox { Dock = DockStyle.Fill };
+        _logDirBox = new TextBox { Dock = DockStyle.Fill};
         _logDirBrowseBtn = new Button { Text = "Browse...", Dock = DockStyle.Fill };
         _logDirBrowseBtn.Click += (_, _) =>
         {
