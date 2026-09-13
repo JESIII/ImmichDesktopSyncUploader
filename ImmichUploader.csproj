@@ -9,14 +9,22 @@
     <AssemblyName>ImmichUploader</AssemblyName>
     <RootNamespace>ImmichUploader</RootNamespace>
     <ApplicationIcon></ApplicationIcon>
-    <PublishSingleFile>true</PublishSingleFile>
-    <SelfContained>true</SelfContained>
-    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
-    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
-    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
     <AssemblyTitle>Immich Uploader</AssemblyTitle>
     <Product>Immich Uploader</Product>
-    <Version>1.0.0</Version>
+    <Version>1.1.0</Version>
     <Company></Company>
+    <!--
+      Publish-only settings (self-contained single file, compression, RID) are
+      supplied on the publish command line so that a plain `dotnet build` and the
+      test project reference a RID-less, framework-dependent assembly. See
+      README.md "Build the tray app" for the full publish command.
+    -->
   </PropertyGroup>
+
+  <!-- The test project lives in a subfolder; keep it out of the app compile. -->
+  <ItemGroup>
+    <Compile Remove="ImmichUploader.Tests\**" />
+    <None Remove="ImmichUploader.Tests\**" />
+    <EmbeddedResource Remove="ImmichUploader.Tests\**" />
+  </ItemGroup>
 </Project>

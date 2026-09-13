@@ -16,6 +16,7 @@ public static class ConfigStore
         if (!File.Exists(path))
         {
             var defaults = new AppConfig();
+            defaults.Normalize();
             Save(defaults);
             return defaults;
         }
@@ -23,7 +24,7 @@ public static class ConfigStore
         {
             var json = File.ReadAllText(path);
             var cfg = JsonSerializer.Deserialize<AppConfig>(json, Options) ?? new AppConfig();
-            if (cfg.Folders == null) cfg.Folders = new List<string>();
+            cfg.Normalize();
             return cfg;
         }
         catch
@@ -31,6 +32,7 @@ public static class ConfigStore
             var backup = path + ".corrupt-" + DateTime.Now.ToString("yyyyMMddHHmmss");
             try { File.Move(path, backup); } catch { }
             var defaults = new AppConfig();
+            defaults.Normalize();
             Save(defaults);
             return defaults;
         }
@@ -38,6 +40,7 @@ public static class ConfigStore
 
     public static void Save(AppConfig cfg)
     {
+        cfg.Normalize();
         var path = cfg.ResolveConfigPath();
         var json = JsonSerializer.Serialize(cfg, Options);
         File.WriteAllText(path, json);

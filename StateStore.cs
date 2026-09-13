@@ -9,6 +9,15 @@ public sealed class UploadState
     public DateTime? LastRunStarted { get; set; }
     public DateTime? LastRunFinished { get; set; }
     public string? LastRunResult { get; set; }
+
+    /// <summary>Most recent weekly schedule occurrence already handled (local time).</summary>
+    public DateTime? LastWeeklyHandled { get; set; }
+
+    /// <summary>Most recent monthly schedule occurrence already handled (local time).</summary>
+    public DateTime? LastMonthlyHandled { get; set; }
+
+    /// <summary>Most recent run trigger (manual, watcher, weekly, monthly-rescan).</summary>
+    public string? LastRunTrigger { get; set; }
 }
 
 public static class StateStore
@@ -30,7 +39,12 @@ public static class StateStore
         try
         {
             var json = File.ReadAllText(path);
-            return JsonSerializer.Deserialize<UploadState>(json, Options) ?? new UploadState();
+            var state = JsonSerializer.Deserialize<UploadState>(json, Options) ?? new UploadState();
+            if (state.LastSuccessByFolder is null)
+            {
+                state.LastSuccessByFolder = new Dictionary<string, DateTime>(StringComparer.OrdinalIgnoreCase);
+            }
+            return state;
         }
         catch
         {
@@ -42,6 +56,10 @@ public static class StateStore
     {
         var path = ResolvePath();
         var json = JsonSerializer.Serialize(state, Options);
-        File.WriteAllText(path, json);
+        var tmp = path + ".tmp";
+        File.WriteAllText(tmp, json);
+        // Atomic-ish replace so a crash mid-write cannot corrupt state.json.
+        try { File.Move(tmp, path, overwrite: true); }
+        catch { if (File.Exists(path)) File.Delete(path); File.Move(tmp, path); }
     }
 }

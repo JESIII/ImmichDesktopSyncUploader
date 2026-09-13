@@ -5,7 +5,8 @@
 #define MyAppDisplayName "Immich Uploader"
 #define MyAppPublisher "Personal"
 #define MyAppExeName "ImmichUploader.exe"
-#define MyAppVersion "1.0.0"
+; Bump together with <Version> in ImmichUploader.csproj.
+#define MyAppVersion "1.1.0"
 
 [Setup]
 AppId={{A3F1C8B2-7E4D-4F2A-9B5C-1D3E6F8A9C2B}
