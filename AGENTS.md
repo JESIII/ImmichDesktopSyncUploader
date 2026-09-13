@@ -119,7 +119,9 @@ Written next to the executable (or the configured log dir): `config.json`, `stat
   ```
 
 - **Tests are not packaged.** The `ImmichUploader.Tests` folder is excluded from the app's compile glob and from the installer file list.
-- **Installer**: bundles `ImmichUploader.exe`, `setup.ps1`, and `Upload-Immich.ps1`. Builds are **unsigned**; SmartScreen warnings are expected.
+- **Installer**: bundles `ImmichUploader.exe`, `setup.ps1`, and `Upload-Immich.ps1`, plus `immich-go.exe` when present (ISPP `#if FileExists`). Builds are **unsigned**; SmartScreen warnings are expected.
+- **Upgrade hardening**: the installer uses `CloseApplications=yes`, `RestartApplications=no`, and `AppMutex=ImmichUploader.SingleInstance`. That mutex name **must** match `Program.SingleInstanceMutexName`; changing one without the other breaks clean upgrades. A `[Code]` guard blocks accidental downgrades.
+- **Upgrades preserve data**: `config.json`, `state.json`, and `Logs\` are not in `[Files]`, so they survive upgrades; `[UninstallDelete]` removes them on uninstall.
 
 ---
 

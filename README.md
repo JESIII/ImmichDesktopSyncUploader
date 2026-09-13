@@ -86,7 +86,16 @@ With Inno Setup installed:
 & "$env:LOCALAPPDATA\Programs\Inno Setup 6\ISCC.exe" ImmichUploader.iss
 ```
 
-Output: `installer\Output\ImmichUploader-Setup-<version>.exe`. The installer bundles the tray app and both PowerShell scripts. To bump the version, edit `#define MyAppVersion` at the top of `ImmichUploader.iss`. The `ImmichUploader.Tests` folder is intentionally **not** packaged.
+Output: `installer\Output\ImmichUploader-Setup-<version>.exe`. The installer bundles the tray app and both PowerShell scripts, and includes `immich-go.exe` when it is present next to the project or one folder up. To bump the version, edit `#define MyAppVersion` at the top of `ImmichUploader.iss` (keep it in sync with `<Version>` in the csproj). The `ImmichUploader.Tests` folder is intentionally **not** packaged.
+
+### Upgrading an existing install
+
+The installer upgrades in place (same `AppId`, `ignoreversion` files, same target folder):
+
+- It **closes the running tray app** before replacing the exe (`CloseApplications=yes` + `AppMutex=ImmichUploader.SingleInstance`) and relaunches it exactly once (`RestartApplications=no`).
+- `config.json`, `state.json`, and `Logs\` are **not** part of the install, so your settings and state are preserved across upgrades (older configs are migrated automatically).
+- Installing an **older** build over a newer one prompts for confirmation before proceeding.
+- Uninstalling removes `config.json`, `state.json`, and `Logs\`.
 
 ## Install on a target machine
 
@@ -192,6 +201,8 @@ powershell -ExecutionPolicy Bypass -File Upload-Immich.ps1 -FullRescan -PauseJob
 - **Watcher shows "inactive"** — enable it in **Settings → Schedule & Watcher**, and make sure the source folders exist. Missing folders are skipped (and reported in logs).
 - **Pause Immich jobs is greyed out** — add an **Admin API key** on the Server tab; pausing is disabled without one.
 - **Nothing seems to upload** — open the log folder and inspect the most recent `upload-*.log`.
+- **Installer reports the app is in use** — quit the tray app (right-click → **Quit**) and re-run the installer. The installer normally closes it automatically via Restart Manager.
+- **A second launch does nothing** — the app is single-instance; the existing tray icon is already running.
 
 ## Development
 

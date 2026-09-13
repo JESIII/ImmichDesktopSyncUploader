@@ -29,6 +29,15 @@ UninstallDisplayIcon={app}\{#MyAppExeName}
 UninstallDisplayName={#MyAppDisplayName}
 VersionInfoVersion={#MyAppVersion}
 MinVersion=10.0
+; Upgrade hardening:
+;  - CloseApplications lets Restart Manager close the running tray app so the
+;    locked exe can be replaced.
+;  - RestartApplications=no prevents a double launch (the [Run] entry relaunches
+;    it exactly once after install).
+;  - AppMutex matches Program.SingleInstanceMutexName in the app.
+CloseApplications=yes
+RestartApplications=no
+AppMutex=ImmichUploader.SingleInstance
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
@@ -41,6 +50,12 @@ Name: "autostart"; Description: "Launch Immich Uploader when Windows starts"; Gr
 Source: "bin\Release\net8.0-windows\win-x64\publish\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
 Source: "setup.ps1"; DestDir: "{app}"; Flags: ignoreversion
 Source: "Upload-Immich.ps1"; DestDir: "{app}"; Flags: ignoreversion
+; Bundle immich-go.exe when it is present next to the project or one folder up.
+#if FileExists(AddBackslash(SourcePath) + "immich-go.exe")
+Source: "immich-go.exe"; DestDir: "{app}"; Flags: ignoreversion
+#elif FileExists(AddBackslash(SourcePath) + "..\immich-go.exe")
+Source: "..\immich-go.exe"; DestDir: "{app}"; Flags: ignoreversion
+#endif
 
 [Icons]
 Name: "{autoprograms}\Immich Uploader"; Filename: "{app}\{#MyAppExeName}"
@@ -54,7 +69,7 @@ Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueType: 
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#MyAppDisplayName}}"; Flags: nowait postinstall skipifsilent
 
 [UninstallRun]
-Filename: "{cmd}"; Parameters: "/C choice /C Y /N /D Y /T 1 >nul"; Flags: runhidden
+Filename: "{cmd}"; Parameters: "/C choice /C Y /N /D Y /T 1 >nul"; Flags: runhidden; RunOnceId: "DelayDelete"
 
 [UninstallDelete]
 Type: filesandordirs; Name: "{app}\Logs"
@@ -62,7 +77,69 @@ Type: filesandordirs; Name: "{app}\state.json"
 Type: filesandordirs; Name: "{app}\config.json"
 
 [Code]
+{ Compare two dotted version strings numerically. Returns -1, 0, or 1. }
+function VersionPart(const V: String; Index: Integer): Integer;
+var
+  I, Part, Start: Integer;
+begin
+  Result := 0;
+  Part := 0;
+  Start := 1;
+  for I := 1 to Length(V) + 1 do
+  begin
+    if (I > Length(V)) or (V[I] = '.') then
+    begin
+      if Part = Index then
+      begin
+        Result := StrToIntDef(Copy(V, Start, I - Start), 0);
+        Exit;
+      end;
+      Inc(Part);
+      Start := I + 1;
+    end;
+  end;
+end;
+
+function CompareVersionStr(const A, B: String): Integer;
+var
+  I, VA, VB: Integer;
+begin
+  for I := 0 to 3 do
+  begin
+    VA := VersionPart(A, I);
+    VB := VersionPart(B, I);
+    if VA < VB then
+    begin
+      Result := -1;
+      Exit;
+    end;
+    if VA > VB then
+    begin
+      Result := 1;
+      Exit;
+    end;
+  end;
+  Result := 0;
+end;
+
 function InitializeSetup: Boolean;
+var
+  Installed: String;
+  Key: String;
 begin
   Result := True;
+  Key := 'Software\Microsoft\Windows\CurrentVersion\Uninstall\{#SetupSetting("AppId")}_is1';
+
+  if not (RegQueryStringValue(HKLM, Key, 'DisplayVersion', Installed)
+          or RegQueryStringValue(HKCU, Key, 'DisplayVersion', Installed)) then
+    Exit;
+
+  { Block accidental downgrades unless the user explicitly confirms. }
+  if CompareVersionStr(Installed, '{#MyAppVersion}') > 0 then
+  begin
+    if MsgBox('A newer version of {#MyAppDisplayName} (' + Installed + ') is already installed.' + #13#10 + #13#10 +
+              'Install this older version (' + '{#MyAppVersion}' + ') anyway?',
+              mbConfirmation, MB_YESNO) = IDNO then
+      Result := False;
+  end;
 end;

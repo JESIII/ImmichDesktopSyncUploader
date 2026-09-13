@@ -6,9 +6,22 @@ namespace ImmichUploader;
 
 internal static class Program
 {
+    /// <summary>
+    /// Single-instance mutex. Must match <c>AppMutex</c> in ImmichUploader.iss so
+    /// the installer can detect and close the running app before replacing the exe.
+    /// </summary>
+    public const string SingleInstanceMutexName = "ImmichUploader.SingleInstance";
+
     [STAThread]
     private static int Main(string[] args)
     {
+        using var mutex = new Mutex(initiallyOwned: true, SingleInstanceMutexName, out var createdNew);
+        if (!createdNew)
+        {
+            // Another instance already owns the tray; exit quietly.
+            return 0;
+        }
+
         var startMinimized = args.Any(a => string.Equals(a, "--tray", StringComparison.OrdinalIgnoreCase));
         ApplicationConfiguration.Initialize();
         Application.SetHighDpiMode(HighDpiMode.SystemAware);
