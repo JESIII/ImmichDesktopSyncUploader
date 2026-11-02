@@ -57,6 +57,7 @@ TrayAppContext (WinForms)  →  UploadOrchestrator  →  IUploadRunner  →  imm
 | [`Scheduler.cs`](Scheduler.cs:9) | Optional weekly partial + monthly full scans; pure `Next*/Previous*/IsDue` helpers |
 | [`AppConfig.cs`](AppConfig.cs:14) / [`ConfigStore.cs`](ConfigStore.cs:5) | Settings model, schema version, `Normalize()` migration/clamp, JSON persistence |
 | [`StateStore.cs`](StateStore.cs:5) | Per-folder last-success, last full rescan, weekly/monthly handled markers (atomic write) |
+| [`TrayIcons.cs`](TrayIcons.cs:18) | App/window icon (embedded `Assets/app.ico`) + state-coloured tray glyphs |
 | [`SettingsForm.cs`](SettingsForm.cs:11) | Modal settings dialog; thin wrapper over `SettingsPanel` |
 | [`IUploadRunner.cs`](IUploadRunner.cs:16) | Runner seam (`UploadRequest`/`UploadResult`) for testing |
 | [`Upload-Immich.ps1`](Upload-Immich.ps1:1) | Standalone batch fallback (must stay aligned) |
@@ -64,6 +65,10 @@ TrayAppContext (WinForms)  →  UploadOrchestrator  →  IUploadRunner  →  imm
 ### Runtime data files
 
 Written next to the executable (or the configured log dir): `config.json`, `state.json`, `Logs\upload-<date>-<trigger>.log`.
+
+### Branding assets
+
+`Assets\app.ico` is both the Win32 exe icon (`<ApplicationIcon>`) and the window/taskbar icon; `Assets\app.png` and `Assets\app-small.png` are the masters (the small one is the simplified glyph). The `.ico` and the small PNG are embedded as resources (`ImmichUploader.Assets.*`) so single-file publishes and `dotnet run` need no loose asset files. Tray glyphs are drawn at runtime: the logo inside a rounded frame whose gradient carries the state colour (idle blue, running green, paused amber, error red), with a bright/dim green blink while a run is active.
 
 ---
 
@@ -95,7 +100,7 @@ Written next to the executable (or the configured log dir): `config.json`, `stat
 
 ## 6. Testing
 
-- **Suite Metrics**: **59 tests across 6 test classes** (`ArgumentGenerationTests`, `ConfigMigrationTests`, `DebounceQueueTests`, `SchedulingTests`, `OrchestratorTests`, `PathAndWatcherTests`).
+- **Suite Metrics**: **64 tests across 7 test classes** (`ArgumentGenerationTests`, `ConfigMigrationTests`, `DebounceQueueTests`, `SchedulingTests`, `OrchestratorTests`, `PathAndWatcherTests`, `TrayIconTests`).
 - **Conventions**:
   - The orchestrator is exercised through [`UploadRequest`](IUploadRunner.cs:16) and a `FakeRunner` (see [`TestSupport.cs`](ImmichUploader.Tests/TestSupport.cs:45)); never shell out to a real `immich-go` in tests.
   - Inject `loadState`/`saveState` into `UploadOrchestrator`/`Scheduler` to keep tests off the filesystem.
@@ -150,7 +155,7 @@ dotnet build -c Release
 # Run the app from source
 dotnet run -c Release
 
-# Tests (52 expected) — run from the test project dir
+# Tests (64 expected) — run from the test project dir
 dotnet test -c Release
 
 # Dependency vulnerability audit

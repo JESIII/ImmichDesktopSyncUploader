@@ -54,10 +54,12 @@ public sealed class TrayAppContext : ApplicationContext, IMainFormHost
 
     private readonly Icon _iconIdle;
     private readonly Icon _iconRunning;
+    private readonly Icon _iconRunningDim;
     private readonly Icon _iconPaused;
     private readonly Icon _iconError;
     private readonly System.Windows.Forms.Timer _iconTimer;
     private bool _blinkOn;
+    private bool _lastRunFailed;
     private string _lastStatusText = "Idle";
 
     public event Action<string>? LogReceived;
@@ -78,6 +80,7 @@ public sealed class TrayAppContext : ApplicationContext, IMainFormHost
 
         _iconIdle = TrayIcons.CreateIdle();
         _iconRunning = TrayIcons.CreateRunning();
+        _iconRunningDim = TrayIcons.CreateRunningDim();
         _iconPaused = TrayIcons.CreatePaused();
         _iconError = TrayIcons.CreateError();
 
@@ -336,6 +339,7 @@ public sealed class TrayAppContext : ApplicationContext, IMainFormHost
         _uiContext.Post(_ =>
         {
             _iconTimer.Stop();
+            _lastRunFailed = !summary.Cancelled && summary.FailCount > 0;
             UpdateTrayIcon();
             var icon = summary.FailCount == 0 ? ToolTipIcon.Info : ToolTipIcon.Warning;
             var title = summary.Cancelled
@@ -355,20 +359,23 @@ public sealed class TrayAppContext : ApplicationContext, IMainFormHost
     {
         if (_orchestrator.IsRunning)
         {
+            _lastRunFailed = false;
             if (_orchestrator.IsPaused)
             {
                 _tray.Icon = _iconPaused;
             }
             else
             {
-                _tray.Icon = _blinkOn ? _iconRunning : _iconIdle;
+                // Blink between the bright and dim frames: the glyph now carries the
+                // mark itself, so it never falls back to the idle (blue) colour.
+                _tray.Icon = _blinkOn ? _iconRunning : _iconRunningDim;
                 if (!_iconTimer.Enabled) _iconTimer.Start();
             }
         }
         else
         {
             _iconTimer.Stop();
-            _tray.Icon = _iconIdle;
+            _tray.Icon = _lastRunFailed ? _iconError : _iconIdle;
         }
         _pauseItem.Text = _orchestrator.IsPaused ? "Resume" : "Pause";
     }
@@ -474,6 +481,7 @@ public sealed class TrayAppContext : ApplicationContext, IMainFormHost
         try { _tray.Visible = false; } catch { }
         try { _iconIdle.Dispose(); } catch { }
         try { _iconRunning.Dispose(); } catch { }
+        try { _iconRunningDim.Dispose(); } catch { }
         try { _iconPaused.Dispose(); } catch { }
         try { _iconError.Dispose(); } catch { }
         base.ExitThreadCore();

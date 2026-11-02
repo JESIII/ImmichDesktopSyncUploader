@@ -26,7 +26,8 @@ ImmichUploader\
 ├── AppConfig.cs / ConfigStore.cs
 ├── StateStore.cs                # per-folder last-success, rescan + schedule markers
 ├── AutoStart.cs                 # HKCU Run registry toggle
-├── TrayIcons.cs                 # color-coded tray icons
+├── TrayIcons.cs                 # window + state-coloured tray icons (from Assets\)
+├── Assets\                      # app.ico (exe/window icon) + logo PNGs (tray glyph)
 ├── GlobalUsings.cs
 ├── Upload-Immich.ps1            # standalone PowerShell fallback (batch only)
 ├── setup.ps1                    # legacy install/uninstall helper
@@ -76,7 +77,7 @@ Drop `immich-go.exe` into the same folder before first run.
 dotnet test -c Release
 ```
 
-From `ImmichUploader.Tests\` (or the repo root if a solution is used). The suite (59 tests) covers argument generation for the full flag surface, secret handling, config migration/clamping, fixed-window debounce behavior, scheduling math and toggles, process concurrency, trigger coalescing, cancellation, and pause safety.
+From `ImmichUploader.Tests\` (or the repo root if a solution is used). The suite (64 tests) covers argument generation for the full flag surface, secret handling, config migration/clamping, fixed-window debounce behavior, scheduling math and toggles, process concurrency, trigger coalescing, cancellation, pause safety, and the app/tray artwork (embedded resources + per-state colour coding).
 
 ## Build the installer
 

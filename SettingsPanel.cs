@@ -159,11 +159,12 @@ public sealed class SettingsPanel : UserControl
 
     private void BuildFoldersTab(TabPage tab)
     {
-        var layout = Grid(2, 8, 150);
+        var layout = Grid(2, 9, 150);
         layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 22));
         layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 150));
         layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 36));
         layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 40));
+        layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 36));
         layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 36));
         layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 36));
         layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 36));
@@ -231,6 +232,10 @@ public sealed class SettingsPanel : UserControl
         _concurrencyBox = new NumericUpDown { Minimum = 1, Maximum = 20, Value = 4, Dock = DockStyle.Left, Width = 80 };
         layout.Controls.Add(_concurrencyBox, 1, 6);
 
+        layout.Controls.Add(Label("Days back (first run):"), 0, 7);
+        _daysBackBox = new NumericUpDown { Minimum = 1, Maximum = 3650, Value = 30, Dock = DockStyle.Left, Width = 80 };
+        layout.Controls.Add(_daysBackBox, 1, 7);
+
         var help = new Label
         {
             Dock = DockStyle.Fill,
@@ -241,7 +246,7 @@ public sealed class SettingsPanel : UserControl
                    " - Days-back is only used when a folder has no prior successful run recorded.",
             ForeColor = System.Drawing.Color.DimGray
         };
-        layout.Controls.Add(help, 1, 7);
+        layout.Controls.Add(help, 1, 8);
 
         tab.Controls.Add(layout);
     }

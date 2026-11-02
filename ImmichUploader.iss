@@ -6,7 +6,7 @@
 #define MyAppPublisher "Personal"
 #define MyAppExeName "ImmichUploader.exe"
 ; Bump together with <Version> in ImmichUploader.csproj.
-#define MyAppVersion "1.1.0"
+#define MyAppVersion "1.1.1"
 
 [Setup]
 AppId={{A3F1C8B2-7E4D-4F2A-9B5C-1D3E6F8A9C2B}
@@ -20,7 +20,7 @@ PrivilegesRequired=lowest
 PrivilegesRequiredOverridesAllowed=dialog
 OutputDir=installer\Output
 OutputBaseFilename=ImmichUploader-Setup-{#MyAppVersion}
-SetupIconFile=
+SetupIconFile=Assets\app.ico
 Compression=lzma2/ultra64
 SolidCompression=yes
 WizardStyle=modern

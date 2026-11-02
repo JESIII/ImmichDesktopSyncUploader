@@ -8,10 +8,10 @@
     <LangVersion>latest</LangVersion>
     <AssemblyName>ImmichUploader</AssemblyName>
     <RootNamespace>ImmichUploader</RootNamespace>
-    <ApplicationIcon></ApplicationIcon>
+    <ApplicationIcon>Assets\app.ico</ApplicationIcon>
     <AssemblyTitle>Immich Uploader</AssemblyTitle>
     <Product>Immich Uploader</Product>
-    <Version>1.1.0</Version>
+    <Version>1.1.1</Version>
     <Company></Company>
     <!--
       Publish-only settings (self-contained single file, compression, RID) are
@@ -26,5 +26,15 @@
     <Compile Remove="ImmichUploader.Tests\**" />
     <None Remove="ImmichUploader.Tests\**" />
     <EmbeddedResource Remove="ImmichUploader.Tests\**" />
+  </ItemGroup>
+
+  <!--
+    The same artwork drives the Win32 exe icon (ApplicationIcon, above) and the
+    runtime window/tray icons. Embedded so single-file publishes and `dotnet run`
+    behave identically and no loose asset files need shipping.
+  -->
+  <ItemGroup>
+    <EmbeddedResource Include="Assets\app.ico" LogicalName="ImmichUploader.Assets.app.ico" />
+    <EmbeddedResource Include="Assets\app-small.png" LogicalName="ImmichUploader.Assets.app-small.png" />
   </ItemGroup>
 </Project>

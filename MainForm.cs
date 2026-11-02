@@ -66,6 +66,7 @@ public sealed class MainForm : Form
     public MainForm(IMainFormHost host)
     {
         _host = host;
+        Icon = TrayIcons.App;
         BuildUi();
         RefreshFromConfig();
 
